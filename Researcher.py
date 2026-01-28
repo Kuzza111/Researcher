@@ -20,14 +20,15 @@ class GeneratePredict: # создание предположений на осн
     # возможные инструменты: LLM, генетические алгоритмы, символьная регрессия  ...
     def __init__(self):
         self.data = []
-        # self.method = None # метод нахождения? по типу индуктивный или что то такое?
+        # self.method = None # метод нахождения? по типу индуктивный или что то подобное? если исопльзоавть индукцию - может проявиться проблема Юма
         # self.generator = None # сам алгоритм, символьная регрессия (возможно с добавлением знаков логических / теории множеств / ...) / LLM / комбинация алгоритмов / ... 
         pass
     pass
 
 class CheckPredict: # проверка гипотезы / предсказания / теории на работоспособность и предсказательную силу
     # симуляция на данных не участвовавших в анализе (выделить проверочные данные изначально или добавлять по мере исследования)?
-    # метрики оценки: простота, предиктивная способность, ..? 
+    # метрики оценки: простота, предиктивная способность, ..? # простота > предиктивная способность?
+    # сделать измерение простоты (количество параметров / колмогоровская сложность / минимальная длина)
     pass
 
 class CheckConsistency: # проверка непротиворечивости модели
@@ -49,26 +50,33 @@ class LoopManager: # основной цикл исследования, объ�
 
 
         if GeneratePredict(peculiarities): # если данных хватает
-            new_predict = GeneratePredict(peculiarities)
+            pass
         else: # если данных не хватает
             while GeneratePredict(peculiarities) returns low_data: 
                 data += DataCollector(requested_data)
+        new_predict = GeneratePredict(peculiarities)
 
 
-        isConsistant = CheckConsistency(predict)
+        isConsistant = CheckConsistency(new_predict) # проверка на математическую / логическую / ... непротиворечивость
+
+        try_to_falsify = CheckConsistency(GeneratePredict(new_predict, falsify)) # попытка сделать контрпример, критерий Поппера (часть проверки)
+
+        if try_to_falsify.check:
+            predict_database.add(new_predict, predict, None, reason, try_to_falsify, falsified=True)
+
 
         if CheckPredict(new_predict) > predict: # записать предыдущую
-            predict_database.add(new_predict, predict, "better", reason)
+            predict_database.add(new_predict, predict, "better", reason, try_to_falsify, falsified=False)
             predict = new_predict
         if CheckPredict(new_predict) == predict: # записать как альтернативу(равносильную)
-            predict_database.add(new_predict, predict, "equal", reason)
+            predict_database.add(new_predict, predict, "equal", reason, try_to_falsify, falsified=False)
             pass
         if CheckPredict(new_predict) < predict: # записать неудачу, по возможности что пошло не так
-            predict_database.add(new_predict, predict, "worse", reason)
+            predict_database.add(new_predict, predict, "worse", reason, try_to_falsify, falsified=False)
             pass
 
 
-        print("Iteration completed, continue loop? info: ", predict, reason, metrics, simulation_result)
+        print("Iteration completed, continue loop? info: ", predict, reason, metrics, simulation_result, try_to_falsify)
         human_accept = key.enter()
         if human_accept: # проверка человеком
             pass
