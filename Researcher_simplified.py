@@ -50,10 +50,29 @@ class ShowData:
        ax.plot(x, y)
        plt.show()
 
+class ClearData: # опциональный класс для сглаживания шума
+    # добавить фильтр по амплитуде шума? тип сглаживать только меньше n
+    def average_value_neighbours(obj: Data): # среднее между соседними значениями
+        original = obj.data
+
+        for i in range(len(obj.data["y"])):
+            if i == 0: 
+                obj.data["y"][i] = (original["y"][i] + original["y"][i+1]) / 2
+            elif i == len(obj.data["y"]) - 1:
+                obj.data["y"][i] = (original["y"][i-1] + original["y"][i]) / 2
+            else:
+                obj.data["y"][i] = (original["y"][i-1] + original["y"][i] + original["y"][i+1]) / 3
+    # медианное значение?
+
 d = Data()
 CreateData.example_with_anomalies(d, 250, 10, 0.1, 50)
 ShowData.ShowPlot(d.data["x"], d.data["y"])
-
+ClearData.average_value_neighbours(d)
+ShowData.ShowPlot(d.data["x"], d.data["y"])
+ClearData.average_value_neighbours(d)
+ShowData.ShowPlot(d.data["x"], d.data["y"])
+ClearData.average_value_neighbours(d)
+ShowData.ShowPlot(d.data["x"], d.data["y"])
 
 
 
@@ -61,9 +80,10 @@ ShowData.ShowPlot(d.data["x"], d.data["y"])
 
 # остальное по мере надобности
 
-class Clear: pass # опциональный класс для сглаживания шума
+
 
 class Analyze: pass # выявление аномалий / отклонений
+    # после сглаживания находить места отклонений и затем анализировать сырые данные в этом месте? 
 
 class GeneratePredict: pass # создание предположения
 
